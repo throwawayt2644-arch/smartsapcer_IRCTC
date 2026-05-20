@@ -14,6 +14,11 @@ class PreferenceManager(context: Context) {
         }
     }
 
+    fun saveCustomSender(sender: String?) {
+        prefs.edit().putString("custom_sender", sender).apply()
+    }
+
     fun getEmail(): String? = prefs.getString("email", null)
     fun getPassword(): String? = prefs.getString("password", null)
+    fun getCustomSender(): String? = prefs.getString("custom_sender", null)
 }

@@ -29,14 +29,27 @@ class MainActivity : AppCompatActivity() {
         val passwordEdit = findViewById<EditText>(R.id.passwordEdit)
         val scanButton = findViewById<Button>(R.id.scanButton)
         val resultText = findViewById<TextView>(R.id.resultText)
+        val debugToggle = findViewById<TextView>(R.id.debugToggle)
+        val debugLayout = findViewById<android.view.View>(R.id.debugLayout)
+        val customSenderEdit = findViewById<EditText>(R.id.customSenderEdit)
 
         val preferenceManager = PreferenceManager(this)
         emailEdit.setText(preferenceManager.getEmail())
         passwordEdit.setText(preferenceManager.getPassword())
+        customSenderEdit.setText(preferenceManager.getCustomSender())
+
+        debugToggle.setOnClickListener {
+            debugLayout.visibility = if (debugLayout.visibility == android.view.View.VISIBLE) {
+                android.view.View.GONE
+            } else {
+                android.view.View.VISIBLE
+            }
+        }
 
         scanButton.setOnClickListener {
             val email = emailEdit.text.toString()
             val password = passwordEdit.text.toString()
+            val customSender = customSenderEdit.text.toString().ifEmpty { null }
 
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please enter email and app password", Toast.LENGTH_SHORT).show()
@@ -44,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             preferenceManager.saveCredentials(email, password)
+            preferenceManager.saveCustomSender(customSender)
             scheduleDailyScan()
 
             scanButton.isEnabled = false
@@ -51,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
             thread {
                 val scanner = EmailScanner()
-                val success = scanner.scanEmails(email, password, onlyUnread = false)
+                val success = scanner.scanEmails(email, password, onlyUnread = false, customSender = customSender)
 
                 runOnUiThread {
                     scanButton.isEnabled = true

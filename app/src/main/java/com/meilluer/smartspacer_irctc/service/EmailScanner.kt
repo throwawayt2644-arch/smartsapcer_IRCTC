@@ -14,7 +14,7 @@ import java.util.Properties
 
 class EmailScanner {
 
-    fun scanEmails(email: String, appPassword: String, onlyUnread: Boolean = false): Boolean {
+    fun scanEmails(email: String, appPassword: String, onlyUnread: Boolean = false, customSender: String? = null): Boolean {
         val props = Properties()
         props["mail.store.protocol"] = "imaps"
         props["mail.imaps.host"] = "imap.gmail.com"
@@ -34,7 +34,8 @@ class EmailScanner {
             inbox.open(Folder.READ_WRITE)
 
             // Search for IRCTC confirmation emails
-            val senderTerm = FromStringTerm("ticketadmin@irctc.co.in")
+            val senderEmail = customSender ?: "ticketadmin@irctc.co.in"
+            val senderTerm = FromStringTerm(senderEmail)
             val subjectTerm = SubjectTerm("Booking Confirmation on IRCTC")
             
             val searchTerm = if (onlyUnread) {

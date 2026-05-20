@@ -11,13 +11,14 @@ class EmailScanWorker(context: Context, workerParams: WorkerParameters) : Worker
         val preferenceManager = PreferenceManager(applicationContext)
         val email = preferenceManager.getEmail()
         val password = preferenceManager.getPassword()
+        val customSender = preferenceManager.getCustomSender()
 
         if (email == null || password == null) {
             return Result.failure()
         }
 
         val scanner = EmailScanner()
-        val success = scanner.scanEmails(email, password, onlyUnread = true)
+        val success = scanner.scanEmails(email, password, onlyUnread = true, customSender = customSender)
 
         if (success) {
             com.meilluer.smartspacer_irctc.data.TicketRepository.currentTicket?.let {
