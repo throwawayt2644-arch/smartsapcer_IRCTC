@@ -19,6 +19,14 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("CM_KEYSTORE_PATH"))
+            storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("CM_KEY_ALIAS")
+            keyPassword = System.getenv("CM_KEY_PASSWORD")
+        }
+    }
 
     buildTypes {
         release {
