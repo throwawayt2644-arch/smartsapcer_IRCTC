@@ -23,46 +23,46 @@ object TicketRepository {
     var target_visibility_flag: Boolean = false
 
     // Helper for global variables if needed as individual properties
-    var trainNumber: String = ""
+    val trainNumber: String
         get() = currentTicket?.trainNumber ?: ""
-    var trainName: String = ""
+    val trainName: String
         get() = currentTicket?.trainName ?: ""
-    var seatNumber: String = ""
+    val seatNumber: String
         get() = currentTicket?.seatNumber ?: ""
-    var coachNumber: String = ""
+    val coachNumber: String
         get() = currentTicket?.coachNumber ?: ""
-    var seatType: String = ""
+    var seatType: String
         get() {
             val ticket = currentTicket ?: return ""
             if (ticket.seatType.isNotEmpty()) return ticket.seatType
             return com.meilluer.smartspacer_irctc.util.SeatUtil.getSeatType(ticket.coachNumber, ticket.seatNumber)
         }
         set(value) { currentTicket?.seatType = value }
-    var boardingDate: String = ""
+    val boardingDate: String
         get() = currentTicket?.boardingDate ?: ""
-    var departureTime: String = ""
+    var departureTime: String
         get() = currentTicket?.departureTime ?: ""
         set(value) { currentTicket?.departureTime = value }
-    var fromStation: String = ""
+    val fromStation: String
         get() = currentTicket?.fromStation ?: ""
-    var toStation: String = ""
+    val toStation: String
         get() = currentTicket?.toStation ?: ""
-    var arrivalTime: String = ""
+    var arrivalTime: String
         get() = currentTicket?.arrivalTime ?: ""
         set(value) { currentTicket?.arrivalTime = value }
-    var delay: Int = 0
+    var delay: Int
         get() = currentTicket?.delay ?: 0
         set(value) { currentTicket?.delay = value }
-    var fromPlatform: String = ""
+    var fromPlatform: String
         get() = currentTicket?.fromPlatform ?: ""
         set(value) { currentTicket?.fromPlatform = value }
-    var toPlatform: String = ""
+    var toPlatform: String
         get() = currentTicket?.toPlatform ?: ""
         set(value) { currentTicket?.toPlatform = value }
-    var nextStation: String = ""
+    var nextStation: String
         get() = currentTicket?.nextStation ?: ""
         set(value) { currentTicket?.nextStation = value }
-    var journeyStarted: Boolean = false
+    var journeyStarted: Boolean
         get() = currentTicket?.journeyStarted ?: false
         set(value) { currentTicket?.journeyStarted = value }
 
