@@ -44,7 +44,7 @@ class Target: SmartspacerTargetProvider() {
             TargetTemplate.Basic(
                 id = "IRCTC_ticket",
                 componentName = ComponentName(context!!, Target::class.java),
-                title = Text("$trainNumber / $seatDisplayText"),
+                title = Text("$trainNumber / $trainName"),
                 subtitle = Text(subtitleText),
                 icon = Icon(AndroidIcon.createWithResource(context, R.drawable.noun_train_8295307),shouldTint=false),
 
