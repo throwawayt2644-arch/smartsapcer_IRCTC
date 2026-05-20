@@ -12,6 +12,9 @@ class CleanupWorker(context: Context, workerParams: WorkerParameters) : Worker(c
     override fun doWork(): Result {
         TicketRepository.reset()
         
+        val preferenceManager = com.meilluer.smartspacer_irctc.data.PreferenceManager(applicationContext)
+        preferenceManager.saveTicketInfo(null)
+        
         // Notify Smartspacer
         SmartspacerTargetProvider.notifyChange(applicationContext, Target::class.java, "IRCTC_ticket")
         

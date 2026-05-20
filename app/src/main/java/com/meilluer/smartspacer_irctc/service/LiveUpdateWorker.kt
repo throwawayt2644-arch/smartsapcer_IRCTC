@@ -94,6 +94,10 @@ class LiveUpdateWorker(context: Context, workerParams: WorkerParameters) : Worke
                     }
                 }
 
+                // Persist updates
+                val preferenceManager = com.meilluer.smartspacer_irctc.data.PreferenceManager(applicationContext)
+                preferenceManager.saveTicketInfo(TicketRepository.currentTicket)
+
                 // Notify Smartspacer of updates
                 SmartspacerTargetProvider.notifyChange(applicationContext, Target::class.java, "IRCTC_ticket")
                 

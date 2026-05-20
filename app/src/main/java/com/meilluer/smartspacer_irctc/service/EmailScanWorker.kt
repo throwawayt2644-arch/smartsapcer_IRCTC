@@ -22,6 +22,7 @@ class EmailScanWorker(context: Context, workerParams: WorkerParameters) : Worker
 
         if (success) {
             com.meilluer.smartspacer_irctc.data.TicketRepository.currentTicket?.let {
+                preferenceManager.saveTicketInfo(it)
                 com.meilluer.smartspacer_irctc.util.TicketScheduler.scheduleVisibilityUpdate(applicationContext, it)
                 com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider.notifyChange(applicationContext, com.meilluer.smartspacer_irctc.Target::class.java, "IRCTC_ticket")
             }

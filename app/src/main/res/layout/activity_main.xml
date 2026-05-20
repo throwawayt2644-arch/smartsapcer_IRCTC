@@ -58,6 +58,13 @@
             android:hint="Custom Sender Email (Optional)"
             android:inputType="textEmailAddress" />
 
+        <Button
+            android:id="@+id/mockButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Mock Data &amp; Show (2 min)" />
+
     </LinearLayout>
 
 </LinearLayout>
