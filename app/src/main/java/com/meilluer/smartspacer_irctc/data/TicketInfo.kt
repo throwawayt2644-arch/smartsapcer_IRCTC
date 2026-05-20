@@ -1,0 +1,73 @@
+package com.meilluer.smartspacer_irctc.data
+
+data class TicketInfo(
+    val trainNumber: String = "",
+    val trainName: String = "",
+    val seatNumber: String = "",
+    val coachNumber: String = "",
+    val boardingDate: String = "",
+    var departureTime: String = "", // Changed to var for updates
+    val fromStation: String = "", // e.g. "JAIPUR (JP)"
+    val toStation: String = "",   // e.g. "MGR CHENNAI CTL (MAS)"
+    var arrivalTime: String = "",   // Changed to var for updates
+    var delay: Int = 0,            // New delay variable
+    var fromPlatform: String = "", // New platform info
+    var toPlatform: String = "",    // New platform info
+    var nextStation: String = "",
+    var journeyStarted: Boolean = false,
+    var seatType: String = ""
+)
+
+object TicketRepository {
+    var currentTicket: TicketInfo? = null
+    var target_visibility_flag: Boolean = false
+
+    // Helper for global variables if needed as individual properties
+    var trainNumber: String = ""
+        get() = currentTicket?.trainNumber ?: ""
+    var trainName: String = ""
+        get() = currentTicket?.trainName ?: ""
+    var seatNumber: String = ""
+        get() = currentTicket?.seatNumber ?: ""
+    var coachNumber: String = ""
+        get() = currentTicket?.coachNumber ?: ""
+    var seatType: String = ""
+        get() {
+            val ticket = currentTicket ?: return ""
+            if (ticket.seatType.isNotEmpty()) return ticket.seatType
+            return com.meilluer.smartspacer_irctc.util.SeatUtil.getSeatType(ticket.coachNumber, ticket.seatNumber)
+        }
+        set(value) { currentTicket?.seatType = value }
+    var boardingDate: String = ""
+        get() = currentTicket?.boardingDate ?: ""
+    var departureTime: String = ""
+        get() = currentTicket?.departureTime ?: ""
+        set(value) { currentTicket?.departureTime = value }
+    var fromStation: String = ""
+        get() = currentTicket?.fromStation ?: ""
+    var toStation: String = ""
+        get() = currentTicket?.toStation ?: ""
+    var arrivalTime: String = ""
+        get() = currentTicket?.arrivalTime ?: ""
+        set(value) { currentTicket?.arrivalTime = value }
+    var delay: Int = 0
+        get() = currentTicket?.delay ?: 0
+        set(value) { currentTicket?.delay = value }
+    var fromPlatform: String = ""
+        get() = currentTicket?.fromPlatform ?: ""
+        set(value) { currentTicket?.fromPlatform = value }
+    var toPlatform: String = ""
+        get() = currentTicket?.toPlatform ?: ""
+        set(value) { currentTicket?.toPlatform = value }
+    var nextStation: String = ""
+        get() = currentTicket?.nextStation ?: ""
+        set(value) { currentTicket?.nextStation = value }
+    var journeyStarted: Boolean = false
+        get() = currentTicket?.journeyStarted ?: false
+        set(value) { currentTicket?.journeyStarted = value }
+
+    fun reset() {
+        currentTicket = null
+        target_visibility_flag = false
+    }
+}
