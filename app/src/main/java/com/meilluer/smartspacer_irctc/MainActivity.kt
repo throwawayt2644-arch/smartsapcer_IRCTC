@@ -11,13 +11,16 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.lifecycle.lifecycleScope
 import com.meilluer.smartspacer_irctc.data.PreferenceManager
 import com.meilluer.smartspacer_irctc.data.TicketRepository
 import com.meilluer.smartspacer_irctc.service.EmailScanWorker
 import com.meilluer.smartspacer_irctc.service.EmailScanner
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
-import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,6 +30,7 @@ class MainActivity : AppCompatActivity() {
 
         val emailEdit = findViewById<EditText>(R.id.emailEdit)
         val passwordEdit = findViewById<EditText>(R.id.passwordEdit)
+        val geminiApiKeyEdit = findViewById<EditText>(R.id.geminiApiKeyEdit)
         val scanButton = findViewById<Button>(R.id.scanButton)
         val resultText = findViewById<TextView>(R.id.resultText)
         val debugToggle = findViewById<TextView>(R.id.debugToggle)
@@ -38,6 +42,7 @@ class MainActivity : AppCompatActivity() {
         val preferenceManager = PreferenceManager(this)
         emailEdit.setText(preferenceManager.getEmail())
         passwordEdit.setText(preferenceManager.getPassword())
+        geminiApiKeyEdit.setText(preferenceManager.getGeminiApiKey())
         customSenderEdit.setText(preferenceManager.getCustomSender())
         customSubjectEdit.setText(preferenceManager.getCustomSubject())
 
@@ -98,15 +103,17 @@ class MainActivity : AppCompatActivity() {
         scanButton.setOnClickListener {
             val email = emailEdit.text.toString()
             val password = passwordEdit.text.toString()
+            val geminiApiKey = geminiApiKeyEdit.text.toString()
             val customSender = customSenderEdit.text.toString().ifEmpty { null }
             val customSubject = customSubjectEdit.text.toString().ifEmpty { null }
 
-            if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please enter email and app password", Toast.LENGTH_SHORT).show()
+            if (email.isEmpty() || password.isEmpty() || geminiApiKey.isEmpty()) {
+                Toast.makeText(this, "Please enter email, app password and Gemini API Key", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             preferenceManager.saveCredentials(email, password)
+            preferenceManager.saveGeminiApiKey(geminiApiKey)
             preferenceManager.saveCustomSender(customSender)
             preferenceManager.saveCustomSubject(customSubject)
             scheduleDailyScan()
@@ -114,11 +121,13 @@ class MainActivity : AppCompatActivity() {
             scanButton.isEnabled = false
             resultText.text = "Scanning..."
 
-            thread {
+            lifecycleScope.launch {
                 val scanner = EmailScanner()
-                val success = scanner.scanEmails(email, password, onlyUnread = true, customSender = customSender, customSubject = customSubject)
+                try {
+                    val success = withContext(Dispatchers.IO) {
+                        scanner.scanEmails(email, password, geminiApiKey, onlyUnread = true, customSender = customSender, customSubject = customSubject)
+                    }
 
-                runOnUiThread {
                     scanButton.isEnabled = true
                     if (success) {
                         val ticket = TicketRepository.currentTicket
@@ -129,8 +138,12 @@ class MainActivity : AppCompatActivity() {
                             displayTicketInfo(resultText, ticket)
                         }
                     } else {
-                        resultText.text = "Failed to find or parse ticket email."
+                        resultText.text = "No unread IRCTC booking confirmation emails found."
                     }
+                } catch (e: Exception) {
+                    scanButton.isEnabled = true
+                    resultText.text = "Error: ${e.message}"
+                    e.printStackTrace()
                 }
             }
         }

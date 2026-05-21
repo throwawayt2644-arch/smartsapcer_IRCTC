@@ -14,6 +14,12 @@ class PreferenceManager(context: Context) {
         }
     }
 
+    fun saveGeminiApiKey(apiKey: String) {
+        prefs.edit().putString("gemini_api_key", apiKey).apply()
+    }
+
+    fun getGeminiApiKey(): String? = prefs.getString("gemini_api_key", null)
+
     fun saveCustomSender(sender: String?) {
         prefs.edit().putString("custom_sender", sender).apply()
     }

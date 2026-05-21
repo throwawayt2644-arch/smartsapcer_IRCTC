@@ -14,7 +14,7 @@ import java.util.Properties
 
 class EmailScanner {
 
-    fun scanEmails(email: String, appPassword: String, onlyUnread: Boolean = true, customSender: String? = null, customSubject: String? = null): Boolean {
+    suspend fun scanEmails(email: String, appPassword: String, geminiApiKey: String, onlyUnread: Boolean = true, customSender: String? = null, customSubject: String? = null): Boolean {
         val props = Properties()
         props["mail.store.protocol"] = "imaps"
         props["mail.imaps.host"] = "imap.gmail.com"
@@ -28,27 +28,23 @@ class EmailScanner {
         try {
             val session = Session.getDefaultInstance(props)
             store = session.getStore("imaps")
-            store.connect("imap.gmail.com", email, appPassword)
+            
+            try {
+                store.connect("imap.gmail.com", email, appPassword)
+            } catch (e: Exception) {
+                throw Exception("Failed to connect to Gmail: ${e.message}")
+            }
 
             inbox = store.getFolder("INBOX")
-            // Open in READ_WRITE so we can mark as read
             inbox.open(Folder.READ_WRITE)
 
-            // Search for IRCTC confirmation emails
             val senderEmail = customSender ?: "ticketadmin@irctc.co.in"
             val senderTerm = FromStringTerm(senderEmail)
             
             val subjectStr = customSubject ?: "Booking Confirmation on IRCTC"
             val subjectTerm = SubjectTerm(subjectStr)
             
-            val baseTerm = if (customSender != null && customSubject == null) {
-                // If custom sender is provided but no subject, we still prefer the default subject
-                // but we could also just search for the sender. 
-                // Let's stick to subject + sender for safety, but allow it to be broader.
-                AndTerm(senderTerm, subjectTerm)
-            } else {
-                AndTerm(senderTerm, subjectTerm)
-            }
+            val baseTerm = AndTerm(senderTerm, subjectTerm)
 
             val searchTerm = if (onlyUnread) {
                 val unreadTerm = FlagTerm(Flags(Flags.Flag.SEEN), false)
@@ -58,28 +54,26 @@ class EmailScanner {
             }
 
             val messages = inbox.search(searchTerm)
-            
-            // Sort by date descending (latest first)
             messages.sortByDescending { it.sentDate }
+
+            if (messages.isEmpty()) {
+                return false
+            }
 
             for (message in messages) {
                 val content = getTextFromMessage(message)
                 
-                val parser = IrctcParser()
+                val parser = IrctcParser(geminiApiKey)
+                // This might throw Gemini API exceptions
                 val ticketInfo = parser.parseEmail(content)
                 
                 if (ticketInfo != null) {
                     TicketRepository.currentTicket = ticketInfo
-                    
-                    // Mark as read ONLY if information is extracted
                     message.setFlag(Flags.Flag.SEEN, true)
-                    
                     return true
                 }
             }
 
-        } catch (e: Exception) {
-            e.printStackTrace()
         } finally {
             inbox?.close(false)
             store?.close()

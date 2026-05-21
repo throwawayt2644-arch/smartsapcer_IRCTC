@@ -15,6 +15,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        buildConfigField("String", "GEMINI_API_KEY", "\"\"") // Placeholder
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     signingConfigs {
@@ -74,11 +80,13 @@ dependencies {
     implementation(libs.jsoup)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
+    implementation(libs.retrofit.converter-gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
+    implementation(libs.generativeai)
 
     implementation("com.kieronquinn.smartspacer:sdk-plugin:1.1")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
