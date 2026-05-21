@@ -18,6 +18,10 @@ class PreferenceManager(context: Context) {
         prefs.edit().putString("custom_sender", sender).apply()
     }
 
+    fun saveCustomSubject(subject: String?) {
+        prefs.edit().putString("custom_subject", subject).apply()
+    }
+
     fun saveTicketInfo(ticket: TicketInfo?) {
         prefs.edit().apply {
             if (ticket == null) {
@@ -81,4 +85,5 @@ class PreferenceManager(context: Context) {
     fun getEmail(): String? = prefs.getString("email", null)
     fun getPassword(): String? = prefs.getString("password", null)
     fun getCustomSender(): String? = prefs.getString("custom_sender", null)
+    fun getCustomSubject(): String? = prefs.getString("custom_subject", null)
 }

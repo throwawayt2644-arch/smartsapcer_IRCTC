@@ -32,12 +32,14 @@ class MainActivity : AppCompatActivity() {
         val debugToggle = findViewById<TextView>(R.id.debugToggle)
         val debugLayout = findViewById<android.view.View>(R.id.debugLayout)
         val customSenderEdit = findViewById<EditText>(R.id.customSenderEdit)
+        val customSubjectEdit = findViewById<EditText>(R.id.customSubjectEdit)
         val mockButton = findViewById<Button>(R.id.mockButton)
 
         val preferenceManager = PreferenceManager(this)
         emailEdit.setText(preferenceManager.getEmail())
         passwordEdit.setText(preferenceManager.getPassword())
         customSenderEdit.setText(preferenceManager.getCustomSender())
+        customSubjectEdit.setText(preferenceManager.getCustomSubject())
 
         // Load existing ticket info
         val existingTicket = preferenceManager.getTicketInfo()
@@ -97,6 +99,7 @@ class MainActivity : AppCompatActivity() {
             val email = emailEdit.text.toString()
             val password = passwordEdit.text.toString()
             val customSender = customSenderEdit.text.toString().ifEmpty { null }
+            val customSubject = customSubjectEdit.text.toString().ifEmpty { null }
 
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please enter email and app password", Toast.LENGTH_SHORT).show()
@@ -105,6 +108,7 @@ class MainActivity : AppCompatActivity() {
 
             preferenceManager.saveCredentials(email, password)
             preferenceManager.saveCustomSender(customSender)
+            preferenceManager.saveCustomSubject(customSubject)
             scheduleDailyScan()
 
             scanButton.isEnabled = false
@@ -112,7 +116,7 @@ class MainActivity : AppCompatActivity() {
 
             thread {
                 val scanner = EmailScanner()
-                val success = scanner.scanEmails(email, password, onlyUnread = false, customSender = customSender)
+                val success = scanner.scanEmails(email, password, onlyUnread = true, customSender = customSender, customSubject = customSubject)
 
                 runOnUiThread {
                     scanButton.isEnabled = true

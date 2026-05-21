@@ -14,12 +14,13 @@ import java.util.Properties
 
 class EmailScanner {
 
-    fun scanEmails(email: String, appPassword: String, onlyUnread: Boolean = false, customSender: String? = null): Boolean {
+    fun scanEmails(email: String, appPassword: String, onlyUnread: Boolean = true, customSender: String? = null, customSubject: String? = null): Boolean {
         val props = Properties()
         props["mail.store.protocol"] = "imaps"
         props["mail.imaps.host"] = "imap.gmail.com"
         props["mail.imaps.port"] = "993"
         props["mail.imaps.ssl.enable"] = "true"
+        props["mail.imaps.peek"] = "true" // Prevent auto-marking as read
 
         var store: Store? = null
         var inbox: Folder? = null
@@ -36,13 +37,24 @@ class EmailScanner {
             // Search for IRCTC confirmation emails
             val senderEmail = customSender ?: "ticketadmin@irctc.co.in"
             val senderTerm = FromStringTerm(senderEmail)
-            val subjectTerm = SubjectTerm("Booking Confirmation on IRCTC")
             
-            val searchTerm = if (onlyUnread) {
-                val unreadTerm = FlagTerm(Flags(Flags.Flag.SEEN), false)
-                AndTerm(arrayOf(senderTerm, subjectTerm, unreadTerm))
+            val subjectStr = customSubject ?: "Booking Confirmation on IRCTC"
+            val subjectTerm = SubjectTerm(subjectStr)
+            
+            val baseTerm = if (customSender != null && customSubject == null) {
+                // If custom sender is provided but no subject, we still prefer the default subject
+                // but we could also just search for the sender. 
+                // Let's stick to subject + sender for safety, but allow it to be broader.
+                AndTerm(senderTerm, subjectTerm)
             } else {
                 AndTerm(senderTerm, subjectTerm)
+            }
+
+            val searchTerm = if (onlyUnread) {
+                val unreadTerm = FlagTerm(Flags(Flags.Flag.SEEN), false)
+                AndTerm(arrayOf(baseTerm, unreadTerm))
+            } else {
+                baseTerm
             }
 
             val messages = inbox.search(searchTerm)
@@ -50,9 +62,8 @@ class EmailScanner {
             // Sort by date descending (latest first)
             messages.sortByDescending { it.sentDate }
 
-            if (messages.isNotEmpty()) {
-                val latestMessage = messages[0]
-                val content = getTextFromMessage(latestMessage)
+            for (message in messages) {
+                val content = getTextFromMessage(message)
                 
                 val parser = IrctcParser()
                 val ticketInfo = parser.parseEmail(content)
@@ -60,8 +71,8 @@ class EmailScanner {
                 if (ticketInfo != null) {
                     TicketRepository.currentTicket = ticketInfo
                     
-                    // Mark as read ONLY if information is extracted and it matches the sender/content
-                    latestMessage.setFlag(Flags.Flag.SEEN, true)
+                    // Mark as read ONLY if information is extracted
+                    message.setFlag(Flags.Flag.SEEN, true)
                     
                     return true
                 }

@@ -8,12 +8,7 @@ class IrctcParser {
 
     fun parseEmail(htmlContent: String): TicketInfo? {
         val doc: Document = Jsoup.parse(htmlContent)
-        
-        // IRCTC emails are often complex tables. We can try to find text by labels.
         val text = doc.text()
-        
-        // Alternative: Look for tables and rows
-        val tables = doc.select("table")
         
         var trainNumber = ""
         var trainName = ""
@@ -25,22 +20,33 @@ class IrctcParser {
         var toStation = ""
         var arrivalTime = ""
 
-        // Extract using regex or searching for labels in tables
+        // Strategy 1: Table-row based extraction (more precise if layout matches)
         val allRows = doc.select("tr")
         for (row in allRows) {
+            val cells = row.select("td")
+            if (cells.isEmpty()) continue
+            
             val rowText = row.text()
             
-            if (rowText.contains("Train No. / Name", ignoreCase = true)) {
-                val value = row.select("td").last()?.text() ?: ""
+            // Flexible matching for Train No. / Name
+            if (rowText.contains("Train No", ignoreCase = true) && rowText.contains("Name", ignoreCase = true)) {
+                val value = cells.last()?.text() ?: ""
                 if (value.contains("/")) {
                     val parts = value.split("/")
-                    trainNumber = parts[0].trim()
+                    trainNumber = parts[0].trim().filter { it.isDigit() }
                     trainName = parts[1].trim()
+                } else if (trainNumber.isEmpty()) {
+                    // Try regex if simple split fails
+                    val regex = Regex("(\\d{5})\\s*/?\\s*(.*)")
+                    regex.find(value)?.let {
+                        trainNumber = it.groupValues[1]
+                        trainName = it.groupValues[2]
+                    }
                 }
             }
             
-            if (rowText.contains("From / To", ignoreCase = true)) {
-                val value = row.select("td").last()?.text() ?: ""
+            if (rowText.contains("From", ignoreCase = true) && rowText.contains("To", ignoreCase = true) && !rowText.contains("Address", ignoreCase = true)) {
+                val value = cells.last()?.text() ?: ""
                 if (value.contains("/")) {
                     val parts = value.split("/")
                     fromStation = parts[0].trim()
@@ -48,53 +54,84 @@ class IrctcParser {
                 }
             }
             
-            if (rowText.contains("Date of Journey", ignoreCase = true)) {
-                boardingDate = row.select("td").last()?.text() ?: ""
+            if (rowText.contains("Date of Journey", ignoreCase = true) || rowText.contains("Boarding Date", ignoreCase = true)) {
+                boardingDate = cells.last()?.text() ?: ""
             }
             
             if (rowText.contains("Scheduled Departure", ignoreCase = true)) {
-                departureTime = row.select("td").last()?.text() ?: ""
-                // Sometimes it includes the date, let's keep it as is or trim if it's too long
+                departureTime = cells.last()?.text() ?: ""
                 if (departureTime.contains(" ")) {
                     departureTime = departureTime.substringAfterLast(" ").trim()
                 }
             }
             
             if (rowText.contains("Scheduled Arrival", ignoreCase = true)) {
-                arrivalTime = row.select("td").last()?.text() ?: ""
+                arrivalTime = cells.last()?.text() ?: ""
                 if (arrivalTime.contains(" ")) {
                     arrivalTime = arrivalTime.substringAfterLast(" ").trim()
                 }
             }
         }
 
-        // Passenger details table usually has headers: Status Coach Seat / Berth
-        // We look for a row that has "Coach" and "Seat" and then take the next row.
-        val passengerTable = tables.find { it.text().contains("Coach", ignoreCase = true) && it.text().contains("Seat", ignoreCase = true) }
-        passengerTable?.let { table ->
-            val rows = table.select("tr")
-            // Skip header row
-            if (rows.size > 1) {
-                // Find index of Coach and Seat
-                val headerRow = rows.find { it.text().contains("Coach", ignoreCase = true) }
-                val headers = headerRow?.select("td")?.map { it.text().lowercase() } ?: emptyList()
-                
-                val coachIdx = headers.indexOfFirst { it.contains("coach") }
-                val seatIdx = headers.indexOfFirst { it.contains("seat") }
-                
-                // Get first passenger (row after header)
-                val dataRow = rows[rows.indexOf(headerRow) + 1]
-                val cells = dataRow.select("td")
-                if (coachIdx != -1 && cells.size > coachIdx) {
-                    coachNumber = cells[coachIdx].text()
-                }
-                if (seatIdx != -1 && cells.size > seatIdx) {
-                    seatNumber = cells[seatIdx].text()
-                }
+        // Strategy 2: Regex fallback for critical missing info
+        if (trainNumber.isEmpty()) {
+            val trainRegex = Regex("Train No\\.?\\s*/?\\s*Name\\s*[:\\-]?\\s*(\\d{5})\\s*/?\\s*([^\\n\\r]*)", RegexOption.IGNORE_CASE)
+            trainRegex.find(text)?.let {
+                trainNumber = it.groupValues[1]
+                trainName = it.groupValues[2].trim()
             }
         }
 
-        if (trainNumber.isEmpty()) return null
+        if (fromStation.isEmpty()) {
+            val stationRegex = Regex("From\\s*/\\s*To\\s*[:\\-]?\\s*([^/\\n\\r]*)\\s*/\\s*([^\\n\\r]*)", RegexOption.IGNORE_CASE)
+            stationRegex.find(text)?.let {
+                fromStation = it.groupValues[1].trim()
+                toStation = it.groupValues[2].trim()
+            }
+        }
+
+        // Passenger details table
+        val tables = doc.select("table")
+        val passengerTable = tables.find { 
+            val t = it.text().lowercase()
+            t.contains("coach") && (t.contains("seat") || t.contains("berth")) 
+        }
+        
+        passengerTable?.let { table ->
+            val rows = table.select("tr")
+            val headerRow = rows.find { it.text().lowercase().contains("coach") }
+            if (headerRow != null) {
+                val headers = headerRow.select("td").map { it.text().lowercase() }
+                val coachIdx = headers.indexOfFirst { it.contains("coach") }
+                val seatIdx = headers.indexOfFirst { it.contains("seat") || it.contains("berth") }
+                
+                val headerIdx = rows.indexOf(headerRow)
+                if (rows.size > headerIdx + 1) {
+                    val dataRow = rows[headerIdx + 1]
+                    val cells = dataRow.select("td")
+                    if (coachIdx != -1 && cells.size > coachIdx) {
+                        coachNumber = cells[coachIdx].text().trim()
+                    }
+                    if (seatIdx != -1 && cells.size > seatIdx) {
+                        seatNumber = cells[seatIdx].text().trim()
+                    }
+                }
+            }
+        }
+        
+        // Final fallback for seat/coach if table parsing failed
+        if (coachNumber.isEmpty()) {
+            Regex("Coach\\s*[:\\-]?\\s*([A-Z0-9]+)", RegexOption.IGNORE_CASE).find(text)?.let {
+                coachNumber = it.groupValues[1]
+            }
+        }
+        if (seatNumber.isEmpty()) {
+            Regex("(?:Seat|Berth)\\s*No\\.?\\s*[:\\-]?\\s*(\\d+)", RegexOption.IGNORE_CASE).find(text)?.let {
+                seatNumber = it.groupValues[1]
+            }
+        }
+
+        if (trainNumber.isEmpty() || fromStation.isEmpty()) return null
 
         return TicketInfo(
             trainNumber = trainNumber,
