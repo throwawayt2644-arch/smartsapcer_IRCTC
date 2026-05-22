@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         val customSubjectEdit = findViewById<EditText>(R.id.customSubjectEdit)
         val mockButton = findViewById<Button>(R.id.mockButton)
         val showNowButton = findViewById<Button>(R.id.showNowButton)
+        val resetButton = findViewById<Button>(R.id.resetButton)
 
         val preferenceManager = PreferenceManager(this)
         emailEdit.setText(preferenceManager.getEmail())
@@ -53,6 +54,21 @@ class MainActivity : AppCompatActivity() {
             TicketRepository.currentTicket = existingTicket
             TicketRepository.target_visibility_flag = preferenceManager.getVisibility()
             displayTicketInfo(resultText, existingTicket)
+        }
+
+        resetButton.setOnClickListener {
+            preferenceManager.clearAll()
+            TicketRepository.reset()
+            
+            emailEdit.setText("")
+            passwordEdit.setText("")
+            geminiApiKeyEdit.setText("")
+            customSenderEdit.setText("")
+            customSubjectEdit.setText("")
+            resultText.text = "All data cleared."
+            
+            com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider.notifyChange(applicationContext, Target::class.java, "IRCTC_ticket")
+            Toast.makeText(this, "All variables and preferences reset.", Toast.LENGTH_SHORT).show()
         }
 
         mockButton.setOnClickListener {

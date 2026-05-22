@@ -107,4 +107,8 @@ class PreferenceManager(context: Context) {
     fun getPassword(): String? = prefs.getString("password", null)
     fun getCustomSender(): String? = prefs.getString("custom_sender", null)
     fun getCustomSubject(): String? = prefs.getString("custom_subject", null)
+
+    fun clearAll() {
+        prefs.edit().clear().apply()
+    }
 }
