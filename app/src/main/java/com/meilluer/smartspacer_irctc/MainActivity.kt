@@ -72,8 +72,8 @@ class MainActivity : AppCompatActivity() {
             // Fill in missing live data with mock values
             val mockTicket = current.copy(
                 delay = if (current.delay == 0) (5..60).random() else current.delay,
-                fromPlatform = if (current.fromPlatform.isEmpty()) (1..12).random().toString() else current.fromPlatform,
-                toPlatform = if (current.toPlatform.isEmpty()) (1..12).random().toString() else current.toPlatform,
+                fromPlatform = "1",
+                toPlatform = "10",
                 nextStation = if (current.nextStation.isEmpty()) "STATION ${(1..50).random()}" else current.nextStation,
                 journeyStarted = true
             )
