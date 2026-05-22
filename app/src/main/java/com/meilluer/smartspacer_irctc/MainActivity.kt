@@ -40,6 +40,14 @@ class MainActivity : AppCompatActivity() {
         val mockButton = findViewById<Button>(R.id.mockButton)
         val showNowButton = findViewById<Button>(R.id.showNowButton)
         val resetButton = findViewById<Button>(R.id.resetButton)
+        val applyCustomButton = findViewById<Button>(R.id.applyCustomButton)
+
+        val customTrainNum = findViewById<EditText>(R.id.customTrainNum)
+        val customTrainName = findViewById<EditText>(R.id.customTrainName)
+        val customFromStation = findViewById<EditText>(R.id.customFromStation)
+        val customToStation = findViewById<EditText>(R.id.customToStation)
+        val customCoach = findViewById<EditText>(R.id.customCoach)
+        val customSeat = findViewById<EditText>(R.id.customSeat)
 
         val preferenceManager = PreferenceManager(this)
         emailEdit.setText(preferenceManager.getEmail())
@@ -54,6 +62,14 @@ class MainActivity : AppCompatActivity() {
             TicketRepository.currentTicket = existingTicket
             TicketRepository.target_visibility_flag = preferenceManager.getVisibility()
             displayTicketInfo(resultText, existingTicket)
+            
+            // Pre-fill custom fields with current ticket if exists
+            customTrainNum.setText(existingTicket.trainNumber)
+            customTrainName.setText(existingTicket.trainName)
+            customFromStation.setText(existingTicket.fromStation)
+            customToStation.setText(existingTicket.toStation)
+            customCoach.setText(existingTicket.coachNumber)
+            customSeat.setText(existingTicket.seatNumber)
         }
 
         resetButton.setOnClickListener {
@@ -65,10 +81,41 @@ class MainActivity : AppCompatActivity() {
             geminiApiKeyEdit.setText("")
             customSenderEdit.setText("")
             customSubjectEdit.setText("")
+            customTrainNum.setText("")
+            customTrainName.setText("")
+            customFromStation.setText("")
+            customToStation.setText("")
+            customCoach.setText("")
+            customSeat.setText("")
             resultText.text = "All data cleared."
             
             com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider.notifyChange(applicationContext, Target::class.java, "IRCTC_ticket")
             Toast.makeText(this, "All variables and preferences reset.", Toast.LENGTH_SHORT).show()
+        }
+
+        applyCustomButton.setOnClickListener {
+            val ticket = com.meilluer.smartspacer_irctc.data.TicketInfo(
+                trainNumber = customTrainNum.text.toString().ifEmpty { "12345" },
+                trainName = customTrainName.text.toString().ifEmpty { "CUSTOM EXPRESS" },
+                fromStation = customFromStation.text.toString().ifEmpty { "START (ST)" },
+                toStation = customToStation.text.toString().ifEmpty { "END (ED)" },
+                boardingDate = "01-Jan-2027",
+                departureTime = "10:00",
+                arrivalTime = "22:00",
+                coachNumber = customCoach.text.toString().ifEmpty { "B1" },
+                seatNumber = customSeat.text.toString().ifEmpty { "25" },
+                seatType = "LB",
+                journeyStarted = true
+            )
+
+            TicketRepository.currentTicket = ticket
+            TicketRepository.target_visibility_flag = true
+            preferenceManager.saveTicketInfo(ticket)
+            preferenceManager.saveVisibility(true)
+
+            com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider.notifyChange(applicationContext, Target::class.java, "IRCTC_ticket")
+            displayTicketInfo(resultText, ticket)
+            Toast.makeText(this, "Custom ticket applied.", Toast.LENGTH_SHORT).show()
         }
 
         mockButton.setOnClickListener {

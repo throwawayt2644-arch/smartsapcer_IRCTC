@@ -38,8 +38,12 @@ class EmailScanner {
             inbox = store.getFolder("INBOX")
             inbox.open(Folder.READ_WRITE)
 
-            val senderEmail = customSender ?: "ticketadmin@irctc.co.in"
-            val senderTerm = FromStringTerm(senderEmail)
+            val irctcSender = "ticketadmin@irctc.co.in"
+            val senderTerm = if (customSender != null && customSender.isNotEmpty()) {
+                jakarta.mail.search.OrTerm(FromStringTerm(customSender), FromStringTerm(irctcSender))
+            } else {
+                FromStringTerm(irctcSender)
+            }
             
             val subjectStr = customSubject ?: "Booking Confirmation on IRCTC"
             val subjectTerm = SubjectTerm(subjectStr)
@@ -61,6 +65,11 @@ class EmailScanner {
             }
 
             for (message in messages) {
+                // Double check unread status to be absolutely sure
+                if (onlyUnread && message.isSet(Flags.Flag.SEEN)) {
+                    continue
+                }
+
                 val content = getTextFromMessage(message)
                 
                 val parser = IrctcParser(geminiApiKey)
@@ -69,7 +78,7 @@ class EmailScanner {
                 
                 if (ticketInfo != null) {
                     TicketRepository.currentTicket = ticketInfo
-                    message.setFlag(Flags.Flag.SEEN, true)
+                    message.setFlag(Flags.Flag.SEEN, true) // Mark as read ONLY after successful extraction
                     return true
                 }
             }
