@@ -16,7 +16,8 @@ data class TicketInfo(
     var toPlatform: String = "",    // New platform info
     var nextStation: String = "",
     var journeyStarted: Boolean = false,
-    var seatType: String = ""
+    var seatType: String = "",
+    var allStations: List<String> = emptyList() // Added station list
 )
 
 object TicketRepository {
@@ -68,6 +69,9 @@ object TicketRepository {
     var journeyStarted: Boolean
         get() = currentTicket?.journeyStarted ?: false
         set(value) { currentTicket?.journeyStarted = value }
+    var allStations: List<String>
+        get() = currentTicket?.allStations ?: emptyList()
+        set(value) { currentTicket?.allStations = value }
 
     fun reset() {
         currentTicket = null

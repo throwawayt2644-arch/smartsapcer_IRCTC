@@ -51,6 +51,11 @@ class LiveUpdateWorker(context: Context, workerParams: WorkerParameters) : Worke
                 val fromStationStatus = status.stations.find { it.stationCode == fromCode }
                 val toStationStatus = status.stations.find { it.stationCode == toCode }
                 
+                // Fetch and store all stations if not already present
+                if (TicketRepository.allStations.isEmpty() && status.stations.isNotEmpty()) {
+                    TicketRepository.allStations = status.stations.map { it.stationCode }
+                }
+
                 // Detect journey start
                 if (!TicketRepository.journeyStarted) {
                     fromStationStatus?.let {
@@ -61,7 +66,7 @@ class LiveUpdateWorker(context: Context, workerParams: WorkerParameters) : Worke
                     }
                 }
 
-                // Update next station
+                // Update next station and check for destination arrival
                 if (TicketRepository.journeyStarted) {
                     val fromIndex = status.stations.indexOf(fromStationStatus)
                     if (fromIndex != -1) {
@@ -69,6 +74,20 @@ class LiveUpdateWorker(context: Context, workerParams: WorkerParameters) : Worke
                             .find { it.actualArrival == null }
                         next?.let {
                             TicketRepository.nextStation = it.stationCode
+                        }
+                    }
+
+                    // Check if destination has been reached or passed
+                    val toIndex = TicketRepository.allStations.indexOf(toCode)
+                    if (toIndex != -1) {
+                        // Check if any station at or after destination has an actual arrival
+                        val arrivedAtOrAfter = status.stations.filter { s ->
+                            val idx = TicketRepository.allStations.indexOf(s.stationCode)
+                            idx >= toIndex && s.actualArrival != null
+                        }.isNotEmpty()
+
+                        if (arrivedAtOrAfter) {
+                            scheduleCleanup()
                         }
                     }
                 }

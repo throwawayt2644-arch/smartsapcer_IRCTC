@@ -46,6 +46,8 @@ class PreferenceManager(context: Context) {
                 remove("nextStation")
                 remove("journeyStarted")
                 remove("seatType")
+                remove("arrivalDate")
+                remove("allStations")
             } else {
                 putString("trainNumber", ticket.trainNumber)
                 putString("trainName", ticket.trainName)
@@ -62,6 +64,8 @@ class PreferenceManager(context: Context) {
                 putString("nextStation", ticket.nextStation)
                 putBoolean("journeyStarted", ticket.journeyStarted)
                 putString("seatType", ticket.seatType)
+                putString("arrivalDate", ticket.arrivalDate)
+                putString("allStations", ticket.allStations.joinToString("|"))
             }
             apply()
         }
@@ -75,6 +79,9 @@ class PreferenceManager(context: Context) {
 
     fun getTicketInfo(): TicketInfo? {
         val trainNumber = prefs.getString("trainNumber", null) ?: return null
+        val allStationsString = prefs.getString("allStations", "") ?: ""
+        val allStations = if (allStationsString.isEmpty()) emptyList() else allStationsString.split("|")
+
         return TicketInfo(
             trainNumber = trainNumber,
             trainName = prefs.getString("trainName", "") ?: "",
@@ -84,13 +91,15 @@ class PreferenceManager(context: Context) {
             departureTime = prefs.getString("departureTime", "") ?: "",
             fromStation = prefs.getString("fromStation", "") ?: "",
             toStation = prefs.getString("toStation", "") ?: "",
+            arrivalDate = prefs.getString("arrivalDate", "") ?: "",
             arrivalTime = prefs.getString("arrivalTime", "") ?: "",
             delay = prefs.getInt("delay", 0),
             fromPlatform = prefs.getString("fromPlatform", "") ?: "",
             toPlatform = prefs.getString("toPlatform", "") ?: "",
             nextStation = prefs.getString("nextStation", "") ?: "",
             journeyStarted = prefs.getBoolean("journeyStarted", false),
-            seatType = prefs.getString("seatType", "") ?: ""
+            seatType = prefs.getString("seatType", "") ?: "",
+            allStations = allStations
         )
     }
 

@@ -10,6 +10,8 @@ import com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.Text
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider
 import com.kieronquinn.app.smartspacer.sdk.utils.TargetTemplate
 import com.meilluer.smartspacer_irctc.data.TicketRepository
+import com.meilluer.smartspacer_irctc.data.TicketRepository.fromStation
+import com.meilluer.smartspacer_irctc.data.TicketRepository.toStation
 
 import android.graphics.drawable.Icon as AndroidIcon
 
@@ -21,7 +23,7 @@ class Target: SmartspacerTargetProvider() {
         val subtitleText = if (TicketRepository.journeyStarted && TicketRepository.nextStation.isNotEmpty()) {
             "Next: ${TicketRepository.nextStation} • Arr: ${TicketRepository.arrivalTime}"
         } else {
-            "${TicketRepository.seatNumber}/${TicketRepository.coachNumber}/${TicketRepository.seatType} • ${TicketRepository.fromStation} ( ${TicketRepository.departureTime} ) plt.${TicketRepository.fromPlatform} -> ${TicketRepository.toStation} ( ${TicketRepository.arrivalTime} ) plt.${TicketRepository.toPlatform}"
+            "${TicketRepository.seatNumber}/${TicketRepository.coachNumber}/${TicketRepository.seatType}•( ${TicketRepository.departureTime} ) → ( ${TicketRepository.arrivalTime} )"
         }
 
         val seatDisplayText = if (TicketRepository.seatType.isNotEmpty()) "${TicketRepository.coachNumber}, ${TicketRepository.seatNumber} (${TicketRepository.seatType})" else "${TicketRepository.coachNumber}, ${TicketRepository.seatNumber}"
@@ -31,7 +33,7 @@ class Target: SmartspacerTargetProvider() {
             TargetTemplate.Basic(
                 id = "IRCTC_ticket",
                 componentName = ComponentName(context!!, Target::class.java),
-                title = Text("${TicketRepository.trainNumber} / ${TicketRepository.trainName}"),
+                title = Text("${TicketRepository.trainNumber} / ${TicketRepository.trainName} • $fromStation ${TicketRepository.fromPlatform} → $toStation ${TicketRepository.toPlatform}"),
                 subtitle = Text(subtitleText),
                 icon = Icon(AndroidIcon.createWithResource(context, R.drawable.noun_train_8295307),shouldTint=false),
 
