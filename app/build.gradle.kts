@@ -80,7 +80,7 @@ dependencies {
     implementation(libs.jsoup)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.retrofit)
-    implementation(libs.retrofit.converter-gson)
+    implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging)
     implementation(libs.generativeai)
