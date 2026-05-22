@@ -33,8 +33,9 @@ class IrctcParser(private val apiKey: String) {
             - coachNumber: Coach identifier (e.g., S1, B2, A1, M3, etc.)
             - boardingDate: Date of journey (format: dd-MMM-yyyy, e.g., 25-May-2026)
             - departureTime: Scheduled departure time (24h format: HH:mm)
-            - fromStation: Source station name with code (e.g., JAIPUR (JP))
-            - toStation: Destination station name with code (e.g., NEW DELHI (NDLS))
+            - fromStation: Source station name with code (e.g., JAIPUR (JP) in response only give back station code i.e JP and not entire name)
+            - toStation: Destination station name with code (e.g., NEW DELHI (NDLS)in response only give back station code i.e NDLS and not entire name) 
+            - arrivalDate: Date of arrival (format: dd-MMM-yyyy, e.g., 26-May-2026. If not explicitly mentioned, assume it's the same as boardingDate unless the arrivalTime is earlier than departureTime, in which case it's likely the next day.)
             - arrivalTime: Scheduled arrival time (24h format: HH:mm)
             - seatType: Type of seat (LB for Lower Berth, MB for Middle Berth, UB for Upper Berth, SL for Side Lower, SU for Side Upper, etc.)
 

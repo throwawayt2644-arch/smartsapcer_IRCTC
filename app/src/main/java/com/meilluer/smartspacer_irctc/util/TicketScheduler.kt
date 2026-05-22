@@ -15,19 +15,23 @@ object TicketScheduler {
 
     fun scheduleVisibilityUpdate(context: Context, ticket: TicketInfo) {
         // IRCTC dates are usually like "13-Dec-2024" and time "19:35"
-        val dateTimeString = "${ticket.boardingDate} ${ticket.departureTime}"
+        val departureString = "${ticket.boardingDate} ${ticket.departureTime}"
+        val arrivalString = "${ticket.arrivalDate.ifEmpty { ticket.boardingDate }} ${ticket.arrivalTime}"
         val format = SimpleDateFormat("dd-MMM-yyyy HH:mm", Locale.ENGLISH)
         
         try {
-            val departureDate = format.parse(dateTimeString) ?: return
+            val departureDate = format.parse(departureString) ?: return
+            val arrivalDate = format.parse(arrivalString) ?: departureDate
+            
             val departureMillis = departureDate.time
+            val arrivalMillis = arrivalDate.time
             
             val targetMillis = departureMillis - TimeUnit.HOURS.toMillis(4)
             val currentMillis = System.currentTimeMillis()
             
-            val delay = targetMillis - currentMillis
-            
-            if (delay > 0) {
+            if (currentMillis < targetMillis) {
+                // Future journey, more than 4 hours away
+                val delay = targetMillis - currentMillis
                 val workRequest = OneTimeWorkRequestBuilder<VisibilityFlagWorker>()
                     .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                     .build()
@@ -37,8 +41,10 @@ object TicketScheduler {
                     ExistingWorkPolicy.REPLACE,
                     workRequest
                 )
-            } else {
-                // If it's already less than 4 hours before departure, turn it on immediately
+            } else if (currentMillis < arrivalMillis + TimeUnit.HOURS.toMillis(2)) {
+                // Journey is within 4 hours of departure OR currently happening (up to 2 hours after arrival)
+                val preferenceManager = com.meilluer.smartspacer_irctc.data.PreferenceManager(context)
+                preferenceManager.saveVisibility(true)
                 com.meilluer.smartspacer_irctc.data.TicketRepository.target_visibility_flag = true
                 
                 // Also trigger live updates immediately
@@ -49,6 +55,11 @@ object TicketScheduler {
                     androidx.work.ExistingPeriodicWorkPolicy.REPLACE,
                     updateRequest
                 )
+            } else {
+                // Journey is already in the past (more than 2 hours after arrival)
+                val preferenceManager = com.meilluer.smartspacer_irctc.data.PreferenceManager(context)
+                preferenceManager.saveVisibility(false)
+                com.meilluer.smartspacer_irctc.data.TicketRepository.target_visibility_flag = false
             }
         } catch (e: Exception) {
             e.printStackTrace()

@@ -13,6 +13,8 @@ import java.util.concurrent.TimeUnit
 
 class VisibilityFlagWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
     override fun doWork(): Result {
+        val preferenceManager = com.meilluer.smartspacer_irctc.data.PreferenceManager(applicationContext)
+        preferenceManager.saveVisibility(true)
         TicketRepository.target_visibility_flag = true
 
         // Notify Smartspacer

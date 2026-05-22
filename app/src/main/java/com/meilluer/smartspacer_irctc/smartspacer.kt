@@ -9,42 +9,29 @@ import com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.TapAction
 import com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.Text
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider
 import com.kieronquinn.app.smartspacer.sdk.utils.TargetTemplate
-import com.meilluer.smartspacer_irctc.data.TicketRepository.arrivalTime
-import com.meilluer.smartspacer_irctc.data.TicketRepository.coachNumber
-import com.meilluer.smartspacer_irctc.data.TicketRepository.departureTime
-import com.meilluer.smartspacer_irctc.data.TicketRepository.fromPlatform
-import com.meilluer.smartspacer_irctc.data.TicketRepository.fromStation
-import com.meilluer.smartspacer_irctc.data.TicketRepository.journeyStarted
-import com.meilluer.smartspacer_irctc.data.TicketRepository.nextStation
-import com.meilluer.smartspacer_irctc.data.TicketRepository.seatNumber
-import com.meilluer.smartspacer_irctc.data.TicketRepository.seatType
-import com.meilluer.smartspacer_irctc.data.TicketRepository.target_visibility_flag
-import com.meilluer.smartspacer_irctc.data.TicketRepository.toPlatform
-import com.meilluer.smartspacer_irctc.data.TicketRepository.toStation
-import com.meilluer.smartspacer_irctc.data.TicketRepository.trainName
-import com.meilluer.smartspacer_irctc.data.TicketRepository.trainNumber
+import com.meilluer.smartspacer_irctc.data.TicketRepository
 
 import android.graphics.drawable.Icon as AndroidIcon
 
 class Target: SmartspacerTargetProvider() {
     override fun getSmartspaceTargets(smartspacerId: String): List<SmartspaceTarget> {
+        val preferenceManager = com.meilluer.smartspacer_irctc.data.PreferenceManager(context!!)
+        if (!preferenceManager.getVisibility()) return emptyList()
 
-        if (!target_visibility_flag) return emptyList()
-
-        val subtitleText = if (journeyStarted && nextStation.isNotEmpty()) {
-            "Next: $nextStation • Arr: $arrivalTime"
+        val subtitleText = if (TicketRepository.journeyStarted && TicketRepository.nextStation.isNotEmpty()) {
+            "Next: ${TicketRepository.nextStation} • Arr: ${TicketRepository.arrivalTime}"
         } else {
-            "$seatNumber/$coachNumber/$seatType • $fromStation ( $departureTime ) plt.$fromPlatform -> $toStation ( $arrivalTime ) plt.$toPlatform"
+            "${TicketRepository.seatNumber}/${TicketRepository.coachNumber}/${TicketRepository.seatType} • ${TicketRepository.fromStation} ( ${TicketRepository.departureTime} ) plt.${TicketRepository.fromPlatform} -> ${TicketRepository.toStation} ( ${TicketRepository.arrivalTime} ) plt.${TicketRepository.toPlatform}"
         }
 
-        val seatDisplayText = if (seatType.isNotEmpty()) "$coachNumber, $seatNumber ($seatType)" else "$coachNumber, $seatNumber"
+        val seatDisplayText = if (TicketRepository.seatType.isNotEmpty()) "${TicketRepository.coachNumber}, ${TicketRepository.seatNumber} (${TicketRepository.seatType})" else "${TicketRepository.coachNumber}, ${TicketRepository.seatNumber}"
 
         val targets = mutableListOf<SmartspaceTarget>()
         targets.add(
             TargetTemplate.Basic(
                 id = "IRCTC_ticket",
                 componentName = ComponentName(context!!, Target::class.java),
-                title = Text("$trainNumber / $trainName"),
+                title = Text("${TicketRepository.trainNumber} / ${TicketRepository.trainName}"),
                 subtitle = Text(subtitleText),
                 icon = Icon(AndroidIcon.createWithResource(context, R.drawable.noun_train_8295307),shouldTint=false),
 
@@ -62,7 +49,9 @@ class Target: SmartspacerTargetProvider() {
     }
 
     override fun onDismiss(smartspacerId: String, targetId: String): Boolean {
-target_visibility_flag=false
+        val preferenceManager = com.meilluer.smartspacer_irctc.data.PreferenceManager(context!!)
+        preferenceManager.saveVisibility(false)
+        TicketRepository.target_visibility_flag = false
         notifyChange()
         return true
     }

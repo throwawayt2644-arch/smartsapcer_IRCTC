@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
         val customSenderEdit = findViewById<EditText>(R.id.customSenderEdit)
         val customSubjectEdit = findViewById<EditText>(R.id.customSubjectEdit)
         val mockButton = findViewById<Button>(R.id.mockButton)
+        val showNowButton = findViewById<Button>(R.id.showNowButton)
 
         val preferenceManager = PreferenceManager(this)
         emailEdit.setText(preferenceManager.getEmail())
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         val existingTicket = preferenceManager.getTicketInfo()
         if (existingTicket != null) {
             TicketRepository.currentTicket = existingTicket
+            TicketRepository.target_visibility_flag = preferenceManager.getVisibility()
             displayTicketInfo(resultText, existingTicket)
         }
 
@@ -79,17 +81,34 @@ class MainActivity : AppCompatActivity() {
             TicketRepository.currentTicket = mockTicket
             TicketRepository.target_visibility_flag = true
             preferenceManager.saveTicketInfo(mockTicket)
+            preferenceManager.saveVisibility(true)
 
             com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider.notifyChange(applicationContext, Target::class.java, "IRCTC_ticket")
             displayTicketInfo(resultText, mockTicket)
             Toast.makeText(this, "Mock data applied. Widget visible for 2 mins.", Toast.LENGTH_SHORT).show()
 
-            // Reset after 2 minutes
-            mockButton.postDelayed({
-                TicketRepository.target_visibility_flag = false
+            // Reset after 2 minutes using WorkManager for reliability
+            val resetRequest = androidx.work.OneTimeWorkRequestBuilder<com.meilluer.smartspacer_irctc.service.VisibilityResetWorker>()
+                .setInitialDelay(2, TimeUnit.MINUTES)
+                .build()
+            
+            WorkManager.getInstance(this).enqueueUniqueWork(
+                "DebugVisibilityReset",
+                androidx.work.ExistingWorkPolicy.REPLACE,
+                resetRequest
+            )
+        }
+
+        showNowButton.setOnClickListener {
+            val ticket = TicketRepository.currentTicket
+            if (ticket != null) {
+                TicketRepository.target_visibility_flag = true
+                preferenceManager.saveVisibility(true)
                 com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider.notifyChange(applicationContext, Target::class.java, "IRCTC_ticket")
-                Toast.makeText(applicationContext, "Debug visibility reset.", Toast.LENGTH_SHORT).show()
-            }, 120000)
+                Toast.makeText(this, "Visibility flag set to true.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "No ticket info available to show.", Toast.LENGTH_SHORT).show()
+            }
         }
 
         debugToggle.setOnClickListener {

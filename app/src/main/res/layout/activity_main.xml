@@ -79,6 +79,13 @@
             android:layout_marginTop="8dp"
             android:text="Mock Data &amp; Show (2 min)" />
 
+        <Button
+            android:id="@+id/showNowButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Show Now" />
+
     </LinearLayout>
 
 </LinearLayout>

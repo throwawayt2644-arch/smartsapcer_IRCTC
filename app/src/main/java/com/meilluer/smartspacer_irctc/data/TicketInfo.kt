@@ -9,6 +9,7 @@ data class TicketInfo(
     var departureTime: String = "", // Changed to var for updates
     val fromStation: String = "", // e.g. "JAIPUR (JP)"
     val toStation: String = "",   // e.g. "MGR CHENNAI CTL (MAS)"
+    val arrivalDate: String = "", // Added arrival date
     var arrivalTime: String = "",   // Changed to var for updates
     var delay: Int = 0,            // New delay variable
     var fromPlatform: String = "", // New platform info
@@ -47,6 +48,8 @@ object TicketRepository {
         get() = currentTicket?.fromStation ?: ""
     val toStation: String
         get() = currentTicket?.toStation ?: ""
+    val arrivalDate: String
+        get() = currentTicket?.arrivalDate ?: ""
     var arrivalTime: String
         get() = currentTicket?.arrivalTime ?: ""
         set(value) { currentTicket?.arrivalTime = value }

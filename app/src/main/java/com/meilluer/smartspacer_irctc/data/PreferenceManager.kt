@@ -67,6 +67,12 @@ class PreferenceManager(context: Context) {
         }
     }
 
+    fun saveVisibility(visible: Boolean) {
+        prefs.edit().putBoolean("target_visibility_flag", visible).apply()
+    }
+
+    fun getVisibility(): Boolean = prefs.getBoolean("target_visibility_flag", false)
+
     fun getTicketInfo(): TicketInfo? {
         val trainNumber = prefs.getString("trainNumber", null) ?: return null
         return TicketInfo(
