@@ -23,7 +23,7 @@ class Target: SmartspacerTargetProvider() {
         val subtitleText = if (TicketRepository.journeyStarted && TicketRepository.nextStation.isNotEmpty()) {
             "Next: ${TicketRepository.nextStation} • Arr: ${TicketRepository.arrivalTime}"
         } else {
-            "${TicketRepository.seatNumber}/${TicketRepository.coachNumber}/${TicketRepository.seatType} • ( ${TicketRepository.departureTime} ) → ( ${TicketRepository.arrivalTime} )"
+            "${TicketRepository.seatNumber}/${TicketRepository.coachNumber}/${TicketRepository.seatType} • $fromStation (${TicketRepository.fromPlatform}) → (${TicketRepository.toPlatform}) $toStation"
         }
 
         val seatDisplayText = if (TicketRepository.seatType.isNotEmpty()) "${TicketRepository.coachNumber}, ${TicketRepository.seatNumber} (${TicketRepository.seatType})" else "${TicketRepository.coachNumber}, ${TicketRepository.seatNumber}"
@@ -33,7 +33,7 @@ class Target: SmartspacerTargetProvider() {
             TargetTemplate.Basic(
                 id = "IRCTC_ticket",
                 componentName = ComponentName(context!!, Target::class.java),
-                title = Text("${TicketRepository.trainNumber} / ${TicketRepository.trainName} • $fromStation (${TicketRepository.fromPlatform}) → (${TicketRepository.toPlatform}) $toStation"),
+                title = Text("${TicketRepository.trainNumber} / ${TicketRepository.trainName} • (${TicketRepository.departureTime}) → (${TicketRepository.arrivalTime})"),
                 subtitle = Text(subtitleText),
                 icon = Icon(AndroidIcon.createWithResource(context, R.drawable.noun_train_8295307),shouldTint=false),
 
