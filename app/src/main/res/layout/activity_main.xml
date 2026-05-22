@@ -1,174 +1,180 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp">
-
-    <EditText
-        android:id="@+id/emailEdit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Gmail Address"
-        android:inputType="textEmailAddress" />
-
-    <EditText
-        android:id="@+id/passwordEdit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="App Password"
-        android:inputType="textPassword" />
-
-    <EditText
-        android:id="@+id/geminiApiKeyEdit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Gemini API Key"
-        android:inputType="textPassword" />
-
-    <Button
-        android:id="@+id/scanButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Scan IRCTC Emails" />
-
-    <TextView
-        android:id="@+id/resultText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Result will appear here"
-        android:textSize="16sp" />
-
-    <TextView
-        android:id="@+id/debugToggle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Debug Options"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="12sp" />
+    android:fillViewport="true">
 
     <LinearLayout
-        android:id="@+id/debugLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:gravity="center"
+        android:padding="16dp">
 
         <EditText
-            android:id="@+id/customSenderEdit"
+            android:id="@+id/emailEdit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Custom Sender Email (Optional)"
+            android:hint="Gmail Address"
             android:inputType="textEmailAddress" />
 
         <EditText
-            android:id="@+id/customSubjectEdit"
+            android:id="@+id/passwordEdit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Custom Subject (Optional)"
-            android:inputType="text" />
+            android:hint="App Password"
+            android:inputType="textPassword" />
 
-        <TextView
+        <EditText
+            android:id="@+id/geminiApiKeyEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Gemini API Key"
+            android:inputType="textPassword" />
+
+        <Button
+            android:id="@+id/scanButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Custom Ticket Data"
-            android:textStyle="bold" />
+            android:text="Scan IRCTC Emails" />
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/resultText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_marginTop="24dp"
+            android:text="Result will appear here"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/debugToggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Debug Options"
+            android:textColor="?android:attr/textColorSecondary"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:id="@+id/debugLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
             <EditText
-                android:id="@+id/customTrainNum"
-                android:layout_width="0dp"
+                android:id="@+id/customSenderEdit"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Train #"
-                android:inputType="number" />
+                android:hint="Custom Sender Email (Optional)"
+                android:inputType="textEmailAddress" />
+
             <EditText
-                android:id="@+id/customTrainName"
-                android:layout_width="0dp"
+                android:id="@+id/customSubjectEdit"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:hint="Train Name"
+                android:hint="Custom Subject (Optional)"
                 android:inputType="text" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Custom Ticket Data"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/customTrainNum"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Train #"
+                    android:inputType="number" />
+                <EditText
+                    android:id="@+id/customTrainName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:hint="Train Name"
+                    android:inputType="text" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/customFromStation"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="From (STN)"
+                    android:inputType="textCapCharacters" />
+                <EditText
+                    android:id="@+id/customToStation"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="To (STN)"
+                    android:inputType="textCapCharacters" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/customCoach"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Coach"
+                    android:inputType="textCapCharacters" />
+                <EditText
+                    android:id="@+id/customSeat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="Seat"
+                    android:inputType="number" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/applyCustomButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Apply Custom Ticket" />
+
+            <Button
+                android:id="@+id/mockButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Mock Data &amp; Show (2 min)" />
+
+            <Button
+                android:id="@+id/showNowButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Show Now" />
+
+            <Button
+                android:id="@+id/resetButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Reset All Data"
+                android:backgroundTint="#FF5252"
+                android:textColor="#FFFFFF" />
+
         </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <EditText
-                android:id="@+id/customFromStation"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="From (STN)"
-                android:inputType="textCapCharacters" />
-            <EditText
-                android:id="@+id/customToStation"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="To (STN)"
-                android:inputType="textCapCharacters" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <EditText
-                android:id="@+id/customCoach"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Coach"
-                android:inputType="textCapCharacters" />
-            <EditText
-                android:id="@+id/customSeat"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Seat"
-                android:inputType="number" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/applyCustomButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Apply Custom Ticket" />
-
-        <Button
-            android:id="@+id/mockButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Mock Data &amp; Show (2 min)" />
-
-        <Button
-            android:id="@+id/showNowButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Show Now" />
-
-        <Button
-            android:id="@+id/resetButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Reset All Data"
-            android:backgroundTint="#FF5252"
-            android:textColor="#FFFFFF" />
 
     </LinearLayout>
-
-</LinearLayout>
+</ScrollView>
