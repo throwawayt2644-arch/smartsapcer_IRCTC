@@ -24,20 +24,9 @@ class LiveUpdateWorker(context: Context, workerParams: WorkerParameters) : Worke
     override fun doWork(): Result {
         val ticket = TicketRepository.currentTicket ?: return Result.failure()
         val trainNumber = ticket.trainNumber
-        
-        // 1. Get Instance ID (mapping boarding date to instance)
-        // Boarding date format: "13-Dec-2024" -> Needs to match Instance ID usually "YYYY-MM-DD"
-        val inputFormat = SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH)
-        val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
-        
-        val instanceId = try {
-            val date = inputFormat.parse(ticket.boardingDate)
-            outputFormat.format(date!!)
-        } catch (e: Exception) {
-            trainNumber // Fallback if parsing fails, though unlikely
-        }
 
         try {
+            val instanceId = resolveInstanceId(trainNumber, ticket.boardingDate) ?: return Result.retry()
             val response = api.getTrainStatus(trainNumber, instanceId).execute()
             if (response.isSuccessful && response.body() != null) {
                 val status = response.body()!!
@@ -93,6 +82,11 @@ class LiveUpdateWorker(context: Context, workerParams: WorkerParameters) : Worke
                 }
 
                 fromStationStatus?.let {
+                    val updatedArrival = it.estimatedArrival ?: it.actualArrival ?: it.scheduledArrival
+                    if (updatedArrival != null) {
+                        TicketRepository.fromArrivalTime = formatTime(updatedArrival)
+                    }
+
                     val updatedTime = it.estimatedDeparture ?: it.actualDeparture ?: it.scheduledDeparture
                     if (updatedTime != null) {
                         TicketRepository.departureTime = formatTime(updatedTime)
@@ -129,6 +123,17 @@ class LiveUpdateWorker(context: Context, workerParams: WorkerParameters) : Worke
         return Result.retry()
     }
 
+    private fun resolveInstanceId(trainNumber: String, boardingDate: String): String? {
+        val formattedDate = formatBoardingDate(boardingDate) ?: return null
+        val response = api.getTrainInstances(trainNumber).execute()
+        if (!response.isSuccessful) return null
+
+        val instances = response.body().orEmpty()
+        return instances.firstOrNull { instance ->
+            instance.instanceId == formattedDate || instance.date == formattedDate
+        }?.instanceId ?: formattedDate
+    }
+
     private fun rescheduleHourlyUpdates() {
         val updateRequest = androidx.work.PeriodicWorkRequestBuilder<LiveUpdateWorker>(1, java.util.concurrent.TimeUnit.HOURS)
             .build()
@@ -155,6 +160,13 @@ class LiveUpdateWorker(context: Context, workerParams: WorkerParameters) : Worke
     private fun extractStationCode(stationString: String): String {
         // stationString: "JAIPUR (JP)" -> returns "JP"
         return stationString.substringAfter("(").substringBefore(")")
+    }
+
+    private fun formatBoardingDate(boardingDate: String): String? {
+        val inputFormat = SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH)
+        val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+        val date = inputFormat.parse(boardingDate) ?: return null
+        return outputFormat.format(date)
     }
 
     private fun formatTime(timeStr: String): String {

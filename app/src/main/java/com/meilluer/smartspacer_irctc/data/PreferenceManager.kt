@@ -37,6 +37,7 @@ class PreferenceManager(context: Context) {
                 remove("coachNumber")
                 remove("boardingDate")
                 remove("departureTime")
+                remove("fromArrivalTime")
                 remove("fromStation")
                 remove("toStation")
                 remove("arrivalTime")
@@ -55,6 +56,7 @@ class PreferenceManager(context: Context) {
                 putString("coachNumber", ticket.coachNumber)
                 putString("boardingDate", ticket.boardingDate)
                 putString("departureTime", ticket.departureTime)
+                putString("fromArrivalTime", ticket.fromArrivalTime)
                 putString("fromStation", ticket.fromStation)
                 putString("toStation", ticket.toStation)
                 putString("arrivalTime", ticket.arrivalTime)
@@ -89,6 +91,7 @@ class PreferenceManager(context: Context) {
             coachNumber = prefs.getString("coachNumber", "") ?: "",
             boardingDate = prefs.getString("boardingDate", "") ?: "",
             departureTime = prefs.getString("departureTime", "") ?: "",
+            fromArrivalTime = prefs.getString("fromArrivalTime", "") ?: "",
             fromStation = prefs.getString("fromStation", "") ?: "",
             toStation = prefs.getString("toStation", "") ?: "",
             arrivalDate = prefs.getString("arrivalDate", "") ?: "",

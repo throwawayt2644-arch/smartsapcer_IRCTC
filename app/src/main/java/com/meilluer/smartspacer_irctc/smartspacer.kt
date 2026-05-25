@@ -23,7 +23,7 @@ class Target: SmartspacerTargetProvider() {
         val subtitleText = if (TicketRepository.journeyStarted && TicketRepository.nextStation.isNotEmpty()) {
             "Next: ${TicketRepository.nextStation} • Arr: ${TicketRepository.arrivalTime}"
         } else {
-            "${TicketRepository.seatNumber}/${TicketRepository.coachNumber}/${TicketRepository.seatType} • $fromStation (${TicketRepository.fromPlatform}) → (${TicketRepository.toPlatform}) $toStation"
+            "${TicketRepository.seatNumber}/${TicketRepository.coachNumber}/${TicketRepository.seatType} • $fromStation ( ${TicketRepository.fromPlatform} ) → ( ${TicketRepository.toPlatform} ) $toStation"
         }
 
         val seatDisplayText = if (TicketRepository.seatType.isNotEmpty()) "${TicketRepository.coachNumber}, ${TicketRepository.seatNumber} (${TicketRepository.seatType})" else "${TicketRepository.coachNumber}, ${TicketRepository.seatNumber}"

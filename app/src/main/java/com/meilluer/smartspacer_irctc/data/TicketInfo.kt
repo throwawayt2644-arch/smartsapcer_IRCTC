@@ -7,6 +7,7 @@ data class TicketInfo(
     val coachNumber: String = "",
     val boardingDate: String = "",
     var departureTime: String = "", // Changed to var for updates
+    var fromArrivalTime: String = "",
     val fromStation: String = "", // e.g. "JAIPUR (JP)"
     val toStation: String = "",   // e.g. "MGR CHENNAI CTL (MAS)"
     val arrivalDate: String = "", // Added arrival date
@@ -45,6 +46,9 @@ object TicketRepository {
     var departureTime: String
         get() = currentTicket?.departureTime ?: ""
         set(value) { currentTicket?.departureTime = value }
+    var fromArrivalTime: String
+        get() = currentTicket?.fromArrivalTime ?: ""
+        set(value) { currentTicket?.fromArrivalTime = value }
     val fromStation: String
         get() = currentTicket?.fromStation ?: ""
     val toStation: String
