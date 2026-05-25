@@ -33,7 +33,7 @@ class Target: SmartspacerTargetProvider() {
             TargetTemplate.Basic(
                 id = "IRCTC_ticket",
                 componentName = ComponentName(context!!, Target::class.java),
-                title = Text("${TicketRepository.trainNumber} / ${TicketRepository.trainName} • (${TicketRepository.departureTime}) → (${TicketRepository.arrivalTime})"),
+                title = Text("${TicketRepository.trainNumber} / ${TicketRepository.trainName} • ${TicketRepository.departureTime} → ${TicketRepository.arrivalTime}"),
                 subtitle = Text(subtitleText),
                 icon = Icon(AndroidIcon.createWithResource(context, R.drawable.noun_train_8295307),shouldTint=false),
 
@@ -54,7 +54,7 @@ class Target: SmartspacerTargetProvider() {
         val preferenceManager = com.meilluer.smartspacer_irctc.data.PreferenceManager(context!!)
         preferenceManager.saveVisibility(false)
         TicketRepository.target_visibility_flag = false
-        notifyChange()
+        notifyChange("IRCTC_ticket")
         return true
     }
 }
