@@ -144,6 +144,26 @@
                     android:inputType="number" />
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/customFromPlatform"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="From Platform"
+                    android:inputType="number" />
+                <EditText
+                    android:id="@+id/customToPlatform"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="To Platform"
+                    android:inputType="number" />
+            </LinearLayout>
+
             <Button
                 android:id="@+id/applyCustomButton"
                 android:layout_width="match_parent"

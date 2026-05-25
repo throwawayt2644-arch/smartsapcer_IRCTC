@@ -46,9 +46,9 @@ object TicketRepository {
         get() = currentTicket?.departureTime ?: ""
         set(value) { currentTicket?.departureTime = value }
     val fromStation: String
-        get() = if (com.meilluer.smartspacer_irctc.BuildConfig.DEBUG) "sta 1" else (currentTicket?.fromStation ?: "")
+        get() = currentTicket?.fromStation ?: ""
     val toStation: String
-        get() = if (com.meilluer.smartspacer_irctc.BuildConfig.DEBUG) "too 10" else (currentTicket?.toStation ?: "")
+        get() = currentTicket?.toStation ?: ""
     val arrivalDate: String
         get() = currentTicket?.arrivalDate ?: ""
     var arrivalTime: String

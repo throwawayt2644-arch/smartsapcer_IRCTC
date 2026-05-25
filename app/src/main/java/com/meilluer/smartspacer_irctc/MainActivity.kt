@@ -48,6 +48,8 @@ class MainActivity : AppCompatActivity() {
         val customToStation = findViewById<EditText>(R.id.customToStation)
         val customCoach = findViewById<EditText>(R.id.customCoach)
         val customSeat = findViewById<EditText>(R.id.customSeat)
+        val customFromPlatform = findViewById<EditText>(R.id.customFromPlatform)
+        val customToPlatform = findViewById<EditText>(R.id.customToPlatform)
 
         val preferenceManager = PreferenceManager(this)
         emailEdit.setText(preferenceManager.getEmail())
@@ -70,6 +72,8 @@ class MainActivity : AppCompatActivity() {
             customToStation.setText(existingTicket.toStation)
             customCoach.setText(existingTicket.coachNumber)
             customSeat.setText(existingTicket.seatNumber)
+            customFromPlatform.setText(existingTicket.fromPlatform)
+            customToPlatform.setText(existingTicket.toPlatform)
         }
 
         resetButton.setOnClickListener {
@@ -87,6 +91,8 @@ class MainActivity : AppCompatActivity() {
             customToStation.setText("")
             customCoach.setText("")
             customSeat.setText("")
+            customFromPlatform.setText("")
+            customToPlatform.setText("")
             resultText.text = "All data cleared."
             
             com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider.notifyChange(applicationContext, Target::class.java, "IRCTC_ticket")
@@ -104,6 +110,8 @@ class MainActivity : AppCompatActivity() {
                 arrivalTime = "22:00",
                 coachNumber = customCoach.text.toString().ifEmpty { "B1" },
                 seatNumber = customSeat.text.toString().ifEmpty { "25" },
+                fromPlatform = customFromPlatform.text.toString(),
+                toPlatform = customToPlatform.text.toString(),
                 seatType = "LB",
                 journeyStarted = true
             )
@@ -132,11 +140,18 @@ class MainActivity : AppCompatActivity() {
                 seatType = "LB"
             )
 
+            val mockFromPlatform = customFromPlatform.text.toString().ifEmpty {
+                current.fromPlatform.ifEmpty { "1" }
+            }
+            val mockToPlatform = customToPlatform.text.toString().ifEmpty {
+                current.toPlatform.ifEmpty { "10" }
+            }
+
             // Fill in missing live data with mock values
             val mockTicket = current.copy(
                 delay = if (current.delay == 0) (5..60).random() else current.delay,
-                fromPlatform = "1",
-                toPlatform = "10",
+                fromPlatform = mockFromPlatform,
+                toPlatform = mockToPlatform,
                 nextStation = if (current.nextStation.isEmpty()) "STATION ${(1..50).random()}" else current.nextStation,
                 journeyStarted = true
             )
@@ -233,15 +248,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun displayTicketInfo(resultText: TextView, ticket: com.meilluer.smartspacer_irctc.data.TicketInfo) {
         val delayText = if (ticket.delay > 0) " (${ticket.delay}m delay)" else ""
-        val platformText = if (ticket.fromPlatform.isNotEmpty()) "\nPlatform: ${ticket.fromPlatform}" else ""
+        val fromPlatformText = if (ticket.fromPlatform.isNotEmpty()) " (${ticket.fromPlatform})" else ""
+        val toPlatformText = if (ticket.toPlatform.isNotEmpty()) " (${ticket.toPlatform})" else ""
         val nextStationText = if (ticket.nextStation.isNotEmpty()) "\nNext: ${ticket.nextStation}" else ""
         
         resultText.text = """
             Success!
             Train: ${ticket.trainNumber} - ${ticket.trainName}$delayText
             Coach: ${ticket.coachNumber}, Seat: ${ticket.seatNumber} (${ticket.seatType})
-            From: ${ticket.fromStation}$platformText
-            To: ${ticket.toStation}
+            From: ${ticket.fromStation}$fromPlatformText
+            To: ${ticket.toStation}$toPlatformText
             Date: ${ticket.boardingDate}
             Departure: ${ticket.departureTime}
             Arrival: ${ticket.arrivalTime}$nextStationText
