@@ -39,7 +39,12 @@ class Target: SmartspacerTargetProvider() {
 
             ).create()
         )
+        if(target_visibility_flag==false){
+    return emptyList()
+}
+        else{
         return targets
+        }
     }
 
     override fun getConfig(smartspacerId: String?): Config {
